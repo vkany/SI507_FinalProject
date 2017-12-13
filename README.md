@@ -6,13 +6,13 @@ This project will pull data about the users favorite Artist and first look up th
 
 # Part I - Getting Started - Downloading necessary files
 Download the following files from this Github repository into the same folder on your desktop:
-*SI507F17_finalproject.py* - the program file
-*SI507F17_finalproject_tests.py* - These tests test the basic collection and functioning of the two classes to make sure the information collected at every stage is being processed correctly.
-*config.py* - this is information for setting up your database(added to .gitignore)
-*secret_data.py* - this is the secret information for Oauth (added to gitignore)
+- *SI507F17_finalproject.py* - the program file
+- *SI507F17_finalproject_tests.py* - These tests test the basic collection and functioning of the two classes to make sure the information collected at every stage is being processed correctly.
+- *config.py* - this is information for setting up your database(added to .gitignore)
+- *secret_data.py* - this is the secret information for Oauth (added to gitignore)
 requirements.txt - this contains the necessary packages used for the code. You will need to install these packages for the code to work.
-*template/*  - this folder contains the index html file for the falsk html visualization
-*token.json* - this file should get created when you done the first run of the code. This ensures a cached oauth for a limited period of time so that you dont have to keep giving it access.
+- *template/*  - this folder contains the index html file for the falsk html visualization
+- *token.json* - this file should get created when you done the first run of the code. This ensures a cached oauth for a limited period of time so that you dont have to keep giving it access.
 
 # Part II - Getting Started - Running the code
 - We will be using Python3 for this project
