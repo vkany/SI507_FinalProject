@@ -1,0 +1,5 @@
+venv/
+pycache/
+secret_data.py
+token.json
+config.py
