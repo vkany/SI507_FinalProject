@@ -11,8 +11,12 @@ from psycopg2 import sql
 import sys
 import operator
 from config import *
+from flask import Flask, request, render_template
+import requests
+
 db_connection = None
 db_cursor = None
+
 
 CLIENT_ID = CLIENT_ID  #'get this from spotify or create a secret data file, see spotify_data.py
 CLIENT_SECRET = CLIENT_SECRET #'get this from spotify or create a secret data file, see spotify_data.py
@@ -21,8 +25,9 @@ AUTHORIZATION_URL = 'https://accounts.spotify.com/authorize'
 REDIRECT_URI = 'https://www.programsinformationpeople.org/runestone/oauth' # This is a URL we have specifically set up at UMSI to handle student requests, basically -- it is an "OAuth2 workaround". You could use any URL -- but it would be a bit rude to, because that's still a hit on someone's URL! In general, you'd use your own -- on your own server.
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 spotify_session = None
-your_feeling = input("how are you feeling? (angry, sad, stressed,happy)\n")
-artist = input("who is your favourite Artist/Album?\n")
+
+display = Flask(__name__)
+
 # Opening auth URL for you to sign in to the Spotify service
 def execute(query, values=None):
     conn, cur = get_connection_and_cursor()
@@ -30,27 +35,45 @@ def execute(query, values=None):
     results = cur.fetchall()
     return results
 
-ecexecute("""
-        select "track_name", "track_url", "track_uri"
-        from Track
-        where
-            ("artist_id" = %s)
-            and (
-                "{0}" >= (SELECT avg("{0}") FROM Track WHERE "artist_id" = %s)
-            )
-        """.format(feeling_relation[feeling]), (artist_id, artist_id))
+@display.route('/')
+def index():
+    # your_feeling = input("how are you feeling? (angry, sad, stressed,happy)\n")
+    # artist = input("who is your favourite Artist/Album?\n")
+    your_feeling = request.args.get('your_feeling')
+    artist = request.args.get('artist')
 
-def get_dominant_feature(artist_id):
-    feeling = your_feeling
-    feeling_relation = {'angry':'liveness', 'sad':'tempo', 'stressed':'energy','happy':'danceability'}
+    # artist_id = artist_dict['id']
+    artist_results = make_spotify_request('https://api.spotify.com/v1/search',params ={'q':artist,'type':'artist'})
+    artist_dict = artist_results.json()
+    print(artist_dict)
+    artist_obj = Artist(artist_dict)
+    # artist.insert_into_database()
+    print(artist_obj.__repr__())
+    artist_obj.insert()
+    top_tracks = artist_obj.get_top_tracks()
+    # print(top_tracks.__repr__())
+    for track_dict in top_tracks:
+        track = Track(track_dict, artist_obj.artist_id)
+        track.track_name
+        track.get_features()
+        track.insert()
+        print(track.__repr__())
+
+    selected_songs = get_dominant_feature(artist_obj.artist_id,your_feeling)
+    song = random.choice(selected_songs)
+
+    url = 'https://open.spotify.com/embed?uri={0}'.format(song['track_uri'])
+
+    db_connection.commit()
+
+
+    # always looks for template in 'templates' folder relative to the current folder
+    return render_template('index.html', url=url)
+
+def get_dominant_feature(artist_id,your_feeling):
+
+    feeling_relation = {'angry':'liveliness', 'sad':'tempo', 'stressed':'energy','happy':'danceability'}
     # message_code = {'angry':["Cheer up!","It can only get better from here!","Hey buddy hang in there!It going to be fine!"],'happy':["Lets get that already great mood even better!","wooop! woop!","Hope this song just makes your mood even bette!"] ,'sad':["Cheer up!","You are going to get through this!","I am sorry! hope you feel better soon!"],'sad':["Oh no!","I am so sorry about this news","It's going to be okay!"],'surprise':["I know this sucks", "Just as shocked","Oh my!"]}
-    # return execute("""
-    #     select "track_name", "track_url", "track_uri"
-    #     from Track
-    #     where
-    #         ("artist_id" = %s)
-    #         and "{0}" = (SELECT max("{0}") FROM Track WHERE "artist_id" = %s)
-    #     """.format(feeling_relation[feeling]), (artist_id, artist_id))
 
     return execute("""
         select "track_name", "track_url", "track_uri"
@@ -60,7 +83,7 @@ def get_dominant_feature(artist_id):
             and (
                 "{0}" >= (SELECT avg("{0}") FROM Track WHERE "artist_id" = %s)
             )
-        """.format(feeling_relation[feeling]), (artist_id, artist_id))
+        """.format(feeling_relation[your_feeling]), (artist_id, artist_id))
 
 def make_spotify_request(url, params=None):
     # we use 'global' to tell python that we will be modifying this global variable
@@ -149,7 +172,8 @@ def setup_database():
     track_uri TEXT,
     danceability REAL,
     energy REAL,
-    liveliness REAL
+    liveliness REAL,
+    tempo REAL
     )""")
 
     conn.commit()
@@ -193,21 +217,8 @@ class Artist:
 
 
 
-        # for track in self.top_tracks_list:
-        #     artist_exmaple = Artist(artist_dict)
-        #     print (artist_dict)
-        #
-        #     # TODO
-        #     cur.execute("""INSERT INTO
-        #     Artists(artist_id,artist_name,top_tracks_list)
-        #     values(%s,%s,%s,%s)""",
-        #     (artist_exmaple.track_id, artist_exmaple.artist_name, artist_exmaple.top_tracks_list)
-
-
-
     def __repr__(self):
-        return "<Artist object for {1} with id {0}  >".format(self.artist_id, self.artist_name)
-
+        return "<Artist object for {1} with id {0}>".format(self.artist_id, self.artist_name)
 
 
 class Track:
@@ -217,6 +228,7 @@ class Track:
         self.track_url = track_dict['href']
         self.track_uri = track_dict['uri']
         self.artist_id = artist_id
+        self.track_dict = track_dict
 
     def get_features(self):
         features = make_spotify_request('https://api.spotify.com/v1/audio-features/{}'.format(self.track_id))
@@ -225,7 +237,7 @@ class Track:
         self.liveness = self.features_dict['liveness']
         self.danceability = self.features_dict['danceability']
         self.energy = self.features_dict['energy']
-        self.tempo: self.features_dict["tempo"]
+        self.tempo = self.features_dict['tempo']
 
     def insert(self):
         row = {
@@ -236,7 +248,8 @@ class Track:
             "track_uri": self.track_uri ,
             "danceability": self.danceability,
             "energy": self.energy,
-            "liveliness": self.liveness
+            "liveliness": self.liveness,
+            "tempo": self.tempo
         }
         insert('Track', row)
 
@@ -247,34 +260,15 @@ class Track:
         self.aword = aword
         return self.aword in self.track_name
 
-setup_database()
-# artist_id = artist_dict['id']
-artist_results = make_spotify_request('https://api.spotify.com/v1/search',params ={'q':artist,'type':'artist'})
-artist_dict = artist_results.json()
-artist_obj = Artist(artist_dict)
-# artist.insert_into_database()
-print(artist_obj.__repr__())
-artist_obj.insert()
-top_tracks = artist_obj.get_top_tracks()
-# print(top_tracks.__repr__())
-for track_dict in top_tracks:
-    track = Track(track_dict, artist_obj.artist_id)
-    track.track_name
-    track.get_features()
-    track.insert()
-    print(track.__repr__())
 
-selected_songs = get_dominant_feature(artist_obj.artist_id)
-print(random.choice(selected_songs))
+
 
     # track.insert_into_database()
     # get sentiment
 
-# we just got the top track list of that artist id
-
-# print(top_tracks_dict)
-# Track(track_request_dict)
 
 
-# print(json.dumps(track_request_dict, indent=2))
-db_connection.commit()
+if __name__ == '__main__':
+    setup_database()
+    # auto reloads (mostly) new code and shows exception traceback in the browser
+    display.run(use_reloader=True, debug=True)

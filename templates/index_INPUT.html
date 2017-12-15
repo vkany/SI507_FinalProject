@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+
+        <!-- Title of the web page -->
+        <title>"How are your feeling?"</title>
+
+        <!-- Let's add a bit of styling to make it look pretty -->
+        <link rel="stylesheet" href="/static/style.css">
+
+    </head>
+
+    {# This is what a jinja tempalte comment looks like #}
+    <!-- This is what an HTML comment looks like -->
+
+    <body>
+        <div class="content">
+          <form action="/" method="GET">
+              <label>
+                Artist
+                <input type="text" name ='artist'>
+              </label>
+              <label>
+                Feeling
+                <input type="text" name ='your_feeling'>
+              </label>
+              <form action="">
+                <input type="radio" name="Angry" value="angry">😡<br>
+                <input type="radio" name="Sad" value="sad"> 😞<br>
+                <input type="radio" name="Stressed" value="stressed">😰<br>
+                <input type="radio" name="Happy" value="happy">😃<br>
+              </form>
+            <!-- <button type="submit"name ='angry'><b>😡</b></button>
+              <button type="submit"name ='sad'><b>😞</b></button>
+              <button type="submit"name ='streesed'><b>😰</b></button>
+              <button type="submit"name ='happy'><b>😃</b></button> -->
+          </form>
+            <!-- TODO A form for asking the quebrstion -->
+
+            <!-- display the answers from instant answers api -->
+
+            </p>
+        </div>
+    </body>
+</html>

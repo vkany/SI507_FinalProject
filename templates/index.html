@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Spoji</title>
+        <style media="screen">
+          .emojis label {
+            cursor: pointer;
+          }
+
+        </style>
+    </head>
+    <body>
+      <div align="center" style="height:200px;margin-bottom:5;background-color:#6426bc;">
+  		<h1 style="float; text-align:center;font-family:'Futura';color:#00e070;padding-top:50px; margin-bottom:5px;letter-spacing:6px">~ SPOJI ~</h1>
+  		<p style="float;text-align:center;font-family:'Futura';color:#ffffff;letter-spacing:1pt">
+        Help me find you a song based on your mood!<br>
+        <p>
+  		</div>
+      <div class="content" style="float;width:calc(100%);font-family:'Futura';height:630px;margin-bottom:50;background-color:#1e1e1e;">
+        <div class="content" style="float;width:calc(100%);padding-top: 5px; padding-bottom: 5px;">"
+          <form action="/" method="GET">
+            <label>
+              <p style="float;text-align:center;font-family:'Futura';color:#ffffff;margin-top:50;">Who is your favourite Artist/Album?</p>
+              <p style="float;text-align:center;font-family:'Futura';margin-top:50;"><input style ="margin-top:25;padding-top:5px; padding-bottom:5px;padding-right:50px;padding-left:50px;" type="text" name ='artist' placeholder="Lets get started..." required></p><br>
+            </label>
+
+              <label style="float;width:calc(100%);height:50px;margin-bottom:50;margin-top:50;">
+            <p style="float;text-align:center;font-family:'Futura';color:#ffffff;margin-top:50;">
+              How are you feeling?</p>
+             </label >
+              <div class='emojis' style="float;text-align:center;font-family:'Futura';color:#ffffff;margin-top:50;">
+                  <label><input type="radio" name='your_feeling' value="angry"><font size="120">😡</font></label>
+                  <label><input type="radio" name='your_feeling' value="sad"><font size="120">😞</font></label>
+                  <label><input type="radio" name='your_feeling' value="stressed"><font size="120">😰</font></label>
+                  <label><input type="radio" name='your_feeling' value="happy"><font size="120">😃</font><br></label>
+              </div>
+            </p>
+            <p align="center">
+              <button type="submit">Search a Spoji</button><br>
+            </p>
+        </form>
+      </div>
+        <main align="center">
+              <iframe src="{{ url }}"
+              align="center"
+              width="480" height="301" frameBorder="0"
+              frameborder="0" allowfullscreen allowtransparency="true"></iframe>
+        </main><br>
+        <div styel =float;margin-top:300>
+          <p align="center"> A Project by: Vibhuti Kanitkar</p>
+        </div>
+    </body style="background-color:#e5e5e5;margin-right:180;margin-left:180">
+
+</html>
