@@ -20,15 +20,18 @@ requirements.txt - this contains the necessary packages used for the code. You w
 - Pip install everything from the requirements.txt file
 - Create a database on the terminal.The name of the database is in the config.py file
 - On your terminal, to run the program, type, "python3 SI507F17_finalproject.py"
+- Incase the web browser does not open for authetication copy paste the url provided in your terminal in a new browser window. Provide authetication.
+- Look up different artisits atleast 4 times. The database adds an artist and collects top tracks each time you look up a new search.  
 - use team SQL or a similar program to check the database tables
 
 # Part III - What output to expect
-- Once you run the code, you will notice that a web browser opens opening the Html page.
-- the code also executes and prints a query which pulls the data for the html output.
-- The print statements also show the .repr() methods of the artist object and the track object of all the top 10 tracks of that artist in your terminal.  
-- you can interact with the html page to see results as attached
-- In your database program you will find the tables keep adding the details for artist and tracks for everynew artist you say you like.
+- Once you run the code, open the local host url provided in your terminal
+- The Html page is interactive and run the program in the background giving results based on your interaction.
+- The code also executes and prints query which pulls the data for the html output into your terminal.
+- The print statements also show the .repr() for the artist object and the all of the top 10 songs of that artist in your terminal.  
+- A reference of the expected result of the html page is attached
+- In your database program you will find the tables keep adding the details for artist and tracks for every new artist you say you search for.
 - The HTML plays the song that is selected based on the mood that you say your are feeling  
 
 # Part IV - Resources used
-I received assistance from Anand Doshi (class Graduate instructor) . I also used references from our class exercises and projects specifically for caching token for OAuth2,  calling queries in SQL and setting up database tables, and making html pages using flask.
+I received assistance from Anand Doshi (Graduate Student Instructor) .I also used references from our class exercises and projects specifically for caching token for OAuth2,  calling queries in SQL and setting up database tables, and making html pages using flask.

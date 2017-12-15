@@ -108,17 +108,17 @@ def make_spotify_request(url, params=None):
     if not params:
         params = {}
 
+    # we use 'global' to tell python that we will be modifying this global variable
+    global spotify_session
+
+    if not spotify_session:
+        start_spotify_session()
+
     unique_ident = params_unique_combination(url,params)
     if unique_ident in CACHE_DICTION:
         # print('--from-cache--')
         return CACHE_DICTION[unique_ident]
     else:
-        # we use 'global' to tell python that we will be modifying this global variable
-        global spotify_session
-
-        if not spotify_session:
-            start_spotify_session()
-
         resp = spotify_session.get(url, params=params)
 
         CACHE_DICTION[unique_ident] = json.loads(resp.text)
