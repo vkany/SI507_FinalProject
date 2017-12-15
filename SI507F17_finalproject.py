@@ -28,6 +28,22 @@ spotify_session = None
 
 display = Flask(__name__)
 
+CACHE_FNAME = 'cache_spotify.json'
+try:
+    cache_spotify = open(CACHE_FNAME, 'r')
+    cache_contents = cache_spotify.read()
+    CACHE_DICTION = json.loads(cache_contents)
+    cache_spotify.close()
+except:
+    CACHE_DICTION = {}
+
+def params_unique_combination(baseurl, params_d, private_keys=["api_key"]):
+    alphabetized_keys = sorted(params_d.keys())
+    res = []
+    for k in alphabetized_keys:
+        if k not in private_keys:
+            res.append("{}-{}".format(k, params_d[k]))
+    return baseurl + "_".join(res)
 # Opening auth URL for you to sign in to the Spotify service
 def execute(query, values=None):
     conn, cur = get_connection_and_cursor()
@@ -41,30 +57,33 @@ def index():
     # artist = input("who is your favourite Artist/Album?\n")
     your_feeling = request.args.get('your_feeling')
     artist = request.args.get('artist')
+    url = None
 
-    # artist_id = artist_dict['id']
-    artist_results = make_spotify_request('https://api.spotify.com/v1/search',params ={'q':artist,'type':'artist'})
-    artist_dict = artist_results.json()
-    print(artist_dict)
-    artist_obj = Artist(artist_dict)
-    # artist.insert_into_database()
-    print(artist_obj.__repr__())
-    artist_obj.insert()
-    top_tracks = artist_obj.get_top_tracks()
-    # print(top_tracks.__repr__())
-    for track_dict in top_tracks:
-        track = Track(track_dict, artist_obj.artist_id)
-        track.track_name
-        track.get_features()
-        track.insert()
-        print(track.__repr__())
+    if your_feeling and artist:
 
-    selected_songs = get_dominant_feature(artist_obj.artist_id,your_feeling)
-    song = random.choice(selected_songs)
+        # artist_id = artist_dict['id']
+        artist_results = make_spotify_request('https://api.spotify.com/v1/search',params ={'q':artist,'type':'artist'})
+        artist_dict = artist_results
+        print(artist_dict)
+        artist_obj = Artist(artist_dict)
+        # artist.insert_into_database()
+        print(artist_obj.__repr__())
+        artist_obj.insert()
+        top_tracks = artist_obj.get_top_tracks()
+        # print(top_tracks.__repr__())
+        for track_dict in top_tracks:
+            track = Track(track_dict, artist_obj.artist_id)
+            track.track_name
+            track.get_features()
+            track.insert()
+            print(track.__repr__())
 
-    url = 'https://open.spotify.com/embed?uri={0}'.format(song['track_uri'])
+        selected_songs = get_dominant_feature(artist_obj.artist_id,your_feeling)
+        song = random.choice(selected_songs)
 
-    db_connection.commit()
+        url = 'https://open.spotify.com/embed?uri={0}'.format(song['track_uri'])
+
+        db_connection.commit()
 
 
     # always looks for template in 'templates' folder relative to the current folder
@@ -86,16 +105,28 @@ def get_dominant_feature(artist_id,your_feeling):
         """.format(feeling_relation[your_feeling]), (artist_id, artist_id))
 
 def make_spotify_request(url, params=None):
-    # we use 'global' to tell python that we will be modifying this global variable
-    global spotify_session
-
-    if not spotify_session:
-        start_spotify_session()
-
     if not params:
         params = {}
 
-    return spotify_session.get(url, params=params)
+    unique_ident = params_unique_combination(url,params)
+    if unique_ident in CACHE_DICTION:
+        # print('--from-cache--')
+        return CACHE_DICTION[unique_ident]
+    else:
+        # we use 'global' to tell python that we will be modifying this global variable
+        global spotify_session
+
+        if not spotify_session:
+            start_spotify_session()
+
+        resp = spotify_session.get(url, params=params)
+
+        CACHE_DICTION[unique_ident] = json.loads(resp.text)
+        dumped_json_cache = json.dumps(CACHE_DICTION)
+        fw = open(CACHE_FNAME,"w")
+        fw.write(dumped_json_cache)
+        fw.close() # Close the open file
+        return CACHE_DICTION[unique_ident]
 
 
 def start_spotify_session():
@@ -203,8 +234,7 @@ class Artist:
     def get_top_tracks(self):
         # artist_request = make_spotify_request('https://api.spotify.com/v1/artists/{0}'.format(self.artist_id))
         top_tracks_url = 'https://api.spotify.com/v1/artists/{0}/top-tracks'.format(self.artist_id)
-        top_tracks = make_spotify_request(top_tracks_url, params={'country':"US"})
-        top_tracks_dict = top_tracks.json()
+        top_tracks_dict = make_spotify_request(top_tracks_url, params={'country':"US"})
         self.top_tracks_list = top_tracks_dict['tracks']
         return self.top_tracks_list
 
@@ -232,7 +262,7 @@ class Track:
 
     def get_features(self):
         features = make_spotify_request('https://api.spotify.com/v1/audio-features/{}'.format(self.track_id))
-        self.features_dict = features.json()
+        self.features_dict = features
         # self.track_name = self.track_name
         self.liveness = self.features_dict['liveness']
         self.danceability = self.features_dict['danceability']
